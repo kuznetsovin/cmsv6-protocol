@@ -32,4 +32,12 @@ func TestServer_Start(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.NotEmpty(t, string(buf[:rcvLen]))
 	}
+
+	testReq = []byte("$$dc0146,3,V141,0900000,,200924 112940,V0000,-0,0,0,-0,0,0,0.00,0,0000000000007383,0000000000000000,0.00,0.00,0.00,0,0.00,0,0|0.00|0|0|0|0|0|0|0|0.00|0|0,#")
+	_, _ = conn.Write(testReq)
+
+	rcvLen, err = conn.Read(buf)
+	if assert.NoError(t, err) {
+		assert.NotEmpty(t, string(buf[:rcvLen]))
+	}
 }

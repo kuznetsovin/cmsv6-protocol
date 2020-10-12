@@ -8,6 +8,9 @@ import (
 )
 
 func connHandler(c net.Conn) {
+	var (
+		response string
+	)
 	defer c.Close()
 	for {
 		buf := make([]byte, 1024)
@@ -18,6 +21,10 @@ func connHandler(c net.Conn) {
 		}
 
 		rawMsg := string(buf[:readLen])
+		logrus.WithFields(logrus.Fields{
+			"msg": rawMsg,
+		}).Debug("Received packet")
+
 		msg, err := cmsv6.ParsePacket(rawMsg)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
@@ -28,23 +35,23 @@ func connHandler(c net.Conn) {
 
 		switch m := msg.(type) {
 		case *cmsv6.V101:
-			logrus.WithFields(logrus.Fields{
-				"type": "V101",
-				"msg":  rawMsg,
-			}).Info("Received packet")
-			r := cmsv6.CreateResponse(m.Header, time.Now().UTC(), []string{"0", "1", "1"})
-			_, err = c.Write([]byte(r))
-			if err != nil {
-				logrus.Error("Send error ", err)
-				return
-			}
-			logrus.WithFields(logrus.Fields{
-				"type": "C100",
-				"msg":  r,
-			}).Info("Send response packet")
+			response = cmsv6.CreateResponse(m.Header, time.Now().UTC(), []string{"0", "1", "1"})
+		case *cmsv6.V141:
+			response = cmsv6.CreateResponse(m.Header, time.Now().UTC(), []string{"0", "0", "0", "0", "", "", "0", "", "0", ""})
 		default:
 			logrus.Error("Unknown type")
 			return
+		}
+
+		if response != "" {
+			_, err = c.Write([]byte(response))
+			if err != nil {
+				logrus.Error("Send response error ", err)
+				return
+			}
+			logrus.WithFields(logrus.Fields{
+				"msg": response,
+			}).Debug("Send response packet")
 		}
 
 	}

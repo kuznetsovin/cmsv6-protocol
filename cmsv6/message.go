@@ -24,6 +24,8 @@ func ParsePacket(packet string) (interface{}, error) {
 	switch m[2] {
 	case "V101":
 		result = &V101{}
+	case "V141":
+		result = &V141{}
 	default:
 		return result, errors.New("Unknown type.")
 	}
