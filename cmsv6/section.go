@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+var (
+	timestampFmt = "060102 150405"
+)
+
 type Header struct {
 	MessageID    string
 	PacketNumber int
@@ -33,12 +37,17 @@ func (h *Header) Init(fields []string) error {
 	h.Type = fields[2]
 	h.DeviceID = fields[3]
 
-	h.Timestamp, err = time.Parse("060102 150405", fields[5])
+	h.Timestamp, err = time.Parse(timestampFmt, fields[5])
 	if err != nil {
 		return fmt.Errorf("Incorrect timestamp format: %v", err)
 	}
 
 	return err
+}
+
+func (h *Header) ToString() string {
+	return fmt.Sprintf("%s,%d,%s,%s,,%s", h.MessageID, h.PacketNumber, h.Type, h.
+		DeviceID, h.Timestamp.Format(timestampFmt))
 }
 
 type CommonGPS struct {
