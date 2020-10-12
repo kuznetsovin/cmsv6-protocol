@@ -20,7 +20,7 @@ func (h *Header) Init(fields []string) error {
 	var (
 		err error
 	)
-	if len(fields) != 5 {
+	if len(fields) != 6 {
 		return errors.New("Incorrect header slice size.")
 	}
 
