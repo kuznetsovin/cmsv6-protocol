@@ -2,7 +2,6 @@ package cmsv6
 
 import (
 	"errors"
-	"strings"
 )
 
 type V101 struct {
@@ -12,18 +11,18 @@ type V101 struct {
 }
 
 func (v *V101) Decode(command string) error {
-	msg := strings.Split(command, ",")
-
-	if len(msg) < 13 {
-		return errors.New("Incorrect message len.")
-	}
-	err := v.Header.Init(msg[:6])
+	msg, err := parseCommand(command)
 	if err != nil {
 		return err
 	}
+	if len(msg) < 13 {
+		return errors.New("Incorrect message len.")
+	}
+	if err = v.Header.Init(msg[:6]); err != nil {
+		return err
+	}
 
-	err = v.CommonGPS.Init(msg[6:13])
-	if err != nil {
+	if err = v.CommonGPS.Init(msg[6:13]); err != nil {
 		return err
 	}
 

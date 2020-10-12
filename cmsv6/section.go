@@ -24,11 +24,7 @@ func (h *Header) Init(fields []string) error {
 		return errors.New("Incorrect header slice size.")
 	}
 
-	if !strings.HasPrefix(fields[0], "$$") {
-		return errors.New("Incorrect situation")
-	}
-
-	h.MessageID = fields[0][2:]
+	h.MessageID = fields[0]
 	h.PacketNumber, err = strconv.Atoi(fields[1])
 	if err != nil {
 		return fmt.Errorf("Incorrect packet number format: %v", err)
@@ -99,4 +95,12 @@ func sliceToGeoCoord(s []string) (float64, error) {
 	result += sec / 36000000000
 
 	return result, err
+}
+
+func parseCommand(packet string) ([]string, error) {
+	if !(strings.HasPrefix(packet, "$$") && strings.HasSuffix(packet, "#")) {
+		return nil, errors.New("Incorrect situation")
+	}
+	clearCmd := strings.Trim(packet, "$$#")
+	return strings.Split(clearCmd, ","), nil
 }
