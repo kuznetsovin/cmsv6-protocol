@@ -40,7 +40,7 @@ func connHandler(c net.Conn) {
 			response = cmsv6.CreateResponse(m.Header, time.Now().UTC(), []string{"0", "0", "0", "0", "", "", "0", "", "0", ""})
 		default:
 			logrus.Error("Unknown type")
-			return
+			continue
 		}
 
 		if response != "" {
