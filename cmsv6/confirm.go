@@ -14,6 +14,6 @@ type C100 struct {
 }
 
 func (c *C100) Encode() string {
-	return fmt.Sprintf("$$%s,%s,%s,%s,#", c.Header.ToString(), c.RequestType,
+	return fmt.Sprintf("$$%s,%s,%s,%s,#", c.Header.Encode(), c.RequestType,
 		c.RequestTimestamp.Format(timestampFmt), strings.Join(c.ExtraFields, ","))
 }

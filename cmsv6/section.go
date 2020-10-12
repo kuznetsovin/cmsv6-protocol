@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -20,7 +19,7 @@ type Header struct {
 	Timestamp    time.Time
 }
 
-func (h *Header) Init(fields []string) error {
+func (h *Header) Decode(fields []string) error {
 	var (
 		err error
 	)
@@ -45,7 +44,7 @@ func (h *Header) Init(fields []string) error {
 	return err
 }
 
-func (h *Header) ToString() string {
+func (h *Header) Encode() string {
 	return fmt.Sprintf("%s,%d,%s,%s,,%s", h.MessageID, h.PacketNumber, h.Type, h.
 		DeviceID, h.Timestamp.Format(timestampFmt))
 }
@@ -56,7 +55,7 @@ type CommonGPS struct {
 	Longitude float64
 }
 
-func (c *CommonGPS) Init(fields []string) error {
+func (c *CommonGPS) Decode(fields []string) error {
 	var (
 		err error
 	)
@@ -104,12 +103,4 @@ func sliceToGeoCoord(s []string) (float64, error) {
 	result += sec / 36000000000
 
 	return result, err
-}
-
-func parseCommand(packet string) ([]string, error) {
-	if !(strings.HasPrefix(packet, "$$") && strings.HasSuffix(packet, "#")) {
-		return nil, errors.New("Incorrect situation")
-	}
-	clearCmd := strings.Trim(packet, "$$#")
-	return strings.Split(clearCmd, ","), nil
 }
