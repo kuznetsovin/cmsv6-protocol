@@ -50,9 +50,10 @@ func (h *Header) Encode() string {
 }
 
 type CommonGPS struct {
-	State     string
-	Latitude  float64
-	Longitude float64
+	State         string
+	Latitude      float64
+	Longitude     float64
+	UnknownFields []string
 }
 
 func (c *CommonGPS) Decode(fields []string) error {
@@ -60,7 +61,7 @@ func (c *CommonGPS) Decode(fields []string) error {
 		err error
 	)
 
-	if len(fields) != 7 {
+	if len(fields) != 18 {
 		return errors.New("Incorrect gps data slice size.")
 	}
 
@@ -73,6 +74,8 @@ func (c *CommonGPS) Decode(fields []string) error {
 	if err != nil {
 		return fmt.Errorf("Incorrect longitude format: %v", err)
 	}
+
+	c.UnknownFields = fields[7:]
 	return nil
 }
 

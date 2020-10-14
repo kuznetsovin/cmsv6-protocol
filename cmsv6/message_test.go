@@ -28,6 +28,20 @@ func TestParsePacketV141(t *testing.T) {
 		v, ok := r.(*V141)
 		if assert.Equal(t, ok, true) {
 			assert.Equal(t, v.Type, "V141")
+			assert.Equal(t, v.Ack, "")
+		}
+	}
+}
+
+func TestParsePacketV114(t *testing.T) {
+	v114 := "$$dc0165,4,V114,0900000,,200924 112942,A0000,37,57,421385999,55,49,237689999,0.00,0,0F0EE331000D7383,0000000000000000,0.00,0.00,0.00,0,0.00,0,0|0.00|0|0|0|0|0|0|0|0.00|0|0,1#"
+
+	r, err := ParsePacket(v114)
+	if assert.NoError(t, err) {
+		v, ok := r.(*V114)
+		if assert.Equal(t, ok, true) {
+			assert.Equal(t, v.Type, "V114")
+			assert.Equal(t, v.Ack, "1")
 		}
 	}
 }

@@ -5,45 +5,27 @@ import (
 )
 
 type V101 struct {
-	Header
-	CommonGPS
-	UnknownFields []string
+	gpsInfo
+	AuthInfo []string
 }
 
 func (v *V101) Decode(msg Message) error {
-	if len(msg) < 13 {
+	if len(msg) < 24 {
 		return errors.New("Incorrect message len.")
 	}
-	if err := v.Header.Decode(msg[:6]); err != nil {
+
+	if err := v.gpsInfo.decode(msg[:24]); err != nil {
 		return err
 	}
 
-	if err := v.CommonGPS.Decode(msg[6:13]); err != nil {
-		return err
-	}
-
-	v.UnknownFields = msg[13:]
+	v.AuthInfo = msg[24:]
 	return nil
 }
 
 type V141 struct {
-	Header
-	CommonGPS
-	UnknownFields []string
+	V114
 }
 
 func (v *V141) Decode(msg Message) error {
-	if len(msg) < 13 {
-		return errors.New("Incorrect message len.")
-	}
-	if err := v.Header.Decode(msg[:6]); err != nil {
-		return err
-	}
-
-	if err := v.CommonGPS.Decode(msg[6:13]); err != nil {
-		return err
-	}
-
-	v.UnknownFields = msg[13:]
-	return nil
+	return v.V114.Decode(msg)
 }

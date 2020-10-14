@@ -19,6 +19,8 @@ func TestV101_Decode(t *testing.T) {
 		assert.Equal(t, v.Type, "V101")
 		assert.Equal(t, v.Timestamp, time.Date(2020, time.September, 24, 11, 29, 40, 0, time.UTC))
 		assert.Equal(t, v.Latitude, 37.96201733330556)
+		assert.Equal(t, len(v.AuthInfo), 22)
+
 	}
 }
 
@@ -33,6 +35,7 @@ func TestV141_Decode(t *testing.T) {
 	if assert.NoError(t, v.Decode(m)) {
 		assert.Equal(t, v.MessageID, "dc0146")
 		assert.Equal(t, v.Type, "V141")
-		assert.Equal(t, len(v.UnknownFields), 12)
+		assert.Equal(t, len(v.UnknownFields), 11)
+		assert.Equal(t, v.Ack, "")
 	}
 }
