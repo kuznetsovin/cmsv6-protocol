@@ -2,6 +2,7 @@ package main
 
 import (
 	"cmsv6-protocol/server"
+	"cmsv6-protocol/store"
 	"github.com/sirupsen/logrus"
 )
 
@@ -10,7 +11,8 @@ func main() {
 	logLevel := logrus.DebugLevel
 
 	logrus.SetLevel(logLevel)
-	srv := server.New(addr)
+	db := store.NewStore("")
+	srv := server.New(addr, db)
 
 	logrus.Error(srv.Start())
 }

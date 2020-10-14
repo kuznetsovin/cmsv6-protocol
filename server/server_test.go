@@ -1,6 +1,7 @@
 package server
 
 import (
+	"cmsv6-protocol/store"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
@@ -11,8 +12,10 @@ import (
 
 func TestServer_Start(t *testing.T) {
 	logrus.SetOutput(ioutil.Discard)
+	//logrus.SetLevel(logrus.DebugLevel)
 	srv := ":6608"
-	s := New(srv)
+	db := store.NewStore("")
+	s := New(srv, db)
 	go func() {
 		assert.NoError(t, s.Start())
 	}()
@@ -40,4 +43,8 @@ func TestServer_Start(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.NotEmpty(t, string(buf[:rcvLen]))
 	}
+
+	testReq = []byte("$$dc0165,4,V114,0900000,,200924 112942,A0000,37,57,421385999,55,49,237689999,0.00,0,0F0EE331000D7383,0000000000000000,0.00,0.00,0.00,0,0.00,0,0|0.00|0|0|0|0|0|0|0|0.00|0|0,1#")
+	_, _ = conn.Write(testReq)
+
 }

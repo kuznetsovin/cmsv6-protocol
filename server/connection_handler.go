@@ -2,12 +2,14 @@ package server
 
 import (
 	"cmsv6-protocol/cmsv6"
+	"cmsv6-protocol/store"
 	"github.com/sirupsen/logrus"
+	"io"
 	"net"
 	"time"
 )
 
-func connHandler(c net.Conn) {
+func connHandler(c net.Conn, db store.Store) {
 	var (
 		response string
 	)
@@ -15,7 +17,12 @@ func connHandler(c net.Conn) {
 	for {
 		buf := make([]byte, 1024)
 		readLen, err := c.Read(buf)
-		if err != nil {
+		switch err {
+		case nil:
+			break
+		case io.EOF:
+			continue
+		default:
 			logrus.Error("Received error ", err)
 			return
 		}
@@ -38,6 +45,11 @@ func connHandler(c net.Conn) {
 			response = cmsv6.CreateResponse(m.Header, time.Now().UTC(), []string{"0", "1", "1"})
 		case *cmsv6.V141:
 			response = cmsv6.CreateResponse(m.Header, time.Now().UTC(), []string{"0", "0", "0", "0", "", "", "0", "", "0", ""})
+		case *cmsv6.V114:
+			p := store.GeoPoint{DeviceID: m.DeviceID, NavTime: m.Timestamp, Lat: m.Latitude, Lon: m.Longitude}
+			if err := db.Save(p); err != nil {
+				logrus.Error("Error save geo data ", err)
+			}
 		default:
 			logrus.Error("Unknown type")
 			continue
