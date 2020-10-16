@@ -28,18 +28,7 @@ func (s *Server) Start() error {
 	defer l.Close()
 
 	go func() {
-		for c := range s.commandsQueue {
-			if err = s.devices.SendCommand(c); err != nil {
-				logrus.WithFields(logrus.Fields{
-					"device": c.DeviceID,
-					"msg":    c.Command,
-				}).Errorf("Send packet error %v", err)
-			}
-
-			logrus.WithFields(logrus.Fields{
-				"msg": c.Command,
-			}).Debug("Send response packet")
-		}
+		s.startCommandSender()
 	}()
 
 	logrus.Infof("Starting server on %s...", s.conn)
@@ -54,6 +43,21 @@ func (s *Server) Start() error {
 				}
 			}(c)
 		}
+	}
+}
+
+func (s *Server) startCommandSender() {
+	for c := range s.commandsQueue {
+		if err := s.devices.SendCommand(c); err != nil {
+			logrus.WithFields(logrus.Fields{
+				"device": c.DeviceID,
+				"msg":    c.Command,
+			}).Errorf("Send packet error %v", err)
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"msg": c.Command,
+		}).Debug("Send response packet")
 	}
 }
 
