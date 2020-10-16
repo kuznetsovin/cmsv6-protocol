@@ -27,11 +27,12 @@ func (s *Server) Start() error {
 		if c, err := l.Accept(); err != nil {
 			logrus.Errorf("Connection error %v", err)
 		} else {
-			go func() {
-				if err := s.connHandler(c); err != nil {
+			go func(conn net.Conn) {
+				defer c.Close()
+				if err := s.connHandler(conn); err != nil {
 					logrus.Error(err)
 				}
-			}()
+			}(c)
 		}
 	}
 }
@@ -40,7 +41,6 @@ func (s *Server) connHandler(c net.Conn) error {
 	var (
 		response string
 	)
-	defer c.Close()
 	for {
 		buf := make([]byte, 1024)
 		readLen, err := c.Read(buf)
@@ -90,7 +90,6 @@ func (s *Server) connHandler(c net.Conn) error {
 				"msg": response,
 			}).Debug("Send response packet")
 		}
-
 	}
 }
 
