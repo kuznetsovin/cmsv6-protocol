@@ -4,15 +4,14 @@ import (
 	"cmsv6-protocol/store"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	"net"
 	"testing"
 	"time"
 )
 
 func TestServer_Start(t *testing.T) {
-	logrus.SetOutput(ioutil.Discard)
-	//logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.DebugLevel)
+
 	srv := ":6608"
 	db := store.NewStore("")
 	s := New(srv, db)

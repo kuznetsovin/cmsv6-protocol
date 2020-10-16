@@ -1,10 +1,15 @@
-package device_manager
+package server
 
 import (
 	"errors"
 	"net"
 	"sync"
 )
+
+type DeviceCommand struct {
+	DeviceID string
+	Command  string
+}
 
 type DeviceRegistry struct {
 	registry map[string]net.Conn
@@ -17,13 +22,13 @@ func (r *DeviceRegistry) AddDevice(deviceId string, c net.Conn) {
 	r.m.RUnlock()
 }
 
-func (r *DeviceRegistry) SendCommand(deviceId, command string) error {
-	devConn, ok := r.registry[deviceId]
+func (r *DeviceRegistry) SendCommand(dc DeviceCommand) error {
+	devConn, ok := r.registry[dc.DeviceID]
 	if !ok {
 		return errors.New("Device not found in registry")
 	}
 
-	_, err := devConn.Write([]byte(command))
+	_, err := devConn.Write([]byte(dc.Command))
 
 	return err
 }
@@ -34,10 +39,10 @@ func (r *DeviceRegistry) RemoveDevice(deviceId string) {
 	r.m.RUnlock()
 }
 
-func NewDeviceRegistry() DeviceRegistry {
+func NewDeviceRegistry() *DeviceRegistry {
 	result := DeviceRegistry{}
 
 	result.registry = make(map[string]net.Conn)
 
-	return result
+	return &result
 }

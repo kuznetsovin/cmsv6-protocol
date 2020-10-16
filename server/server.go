@@ -11,16 +11,36 @@ import (
 )
 
 type Server struct {
-	conn string
-	db   store.Store
+	conn          string
+	db            store.Store
+	devices       *DeviceRegistry
+	commandsQueue chan DeviceCommand
 }
 
 func (s *Server) Start() error {
+	s.devices = NewDeviceRegistry()
+	s.commandsQueue = make(chan DeviceCommand, 1000000)
+
 	l, err := net.Listen("tcp", s.conn)
 	if err != nil {
 		logrus.Fatal("Decode server ", err)
 	}
 	defer l.Close()
+
+	go func() {
+		for c := range s.commandsQueue {
+			if err = s.devices.SendCommand(c); err != nil {
+				logrus.WithFields(logrus.Fields{
+					"device": c.DeviceID,
+					"msg":    c.Command,
+				}).Errorf("Send packet error %v", err)
+			}
+
+			logrus.WithFields(logrus.Fields{
+				"msg": c.Command,
+			}).Debug("Send response packet")
+		}
+	}()
 
 	logrus.Infof("Starting server on %s...", s.conn)
 	for {
@@ -38,9 +58,13 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) connHandler(c net.Conn) error {
-	var (
-		response string
-	)
+	currentDeviceID := ""
+	defer func() {
+		if currentDeviceID != "" {
+			s.devices.RemoveDevice(currentDeviceID)
+		}
+	}()
+
 	for {
 		buf := make([]byte, 1024)
 		readLen, err := c.Read(buf)
@@ -68,9 +92,21 @@ func (s *Server) connHandler(c net.Conn) error {
 
 		switch m := msg.(type) {
 		case *cmsv6.V101:
-			response = cmsv6.CreateResponse(m.Header, time.Now().UTC(), []string{"0", "1", "1"})
+			currentDeviceID = m.Header.DeviceID
+			s.devices.AddDevice(currentDeviceID, c)
+
+			cmd := DeviceCommand{
+				DeviceID: m.DeviceID,
+				Command:  cmsv6.CreateResponse(m.Header, time.Now().UTC(), []string{"0", "1", "1"}),
+			}
+			s.commandsQueue <- cmd
 		case *cmsv6.V141:
-			response = cmsv6.CreateResponse(m.Header, time.Now().UTC(), []string{"0", "0", "0", "0", "", "", "0", "", "0", ""})
+			cmd := DeviceCommand{
+				DeviceID: m.DeviceID,
+				Command: cmsv6.CreateResponse(m.Header, time.Now().UTC(),
+					[]string{"0", "0", "0", "0", "", "", "0", "", "0", ""}),
+			}
+			s.commandsQueue <- cmd
 		case *cmsv6.V114:
 			p := store.GeoPoint{DeviceID: m.DeviceID, NavTime: m.Timestamp, Lat: m.Latitude, Lon: m.Longitude}
 			if err := s.db.Save(p); err != nil {
@@ -79,16 +115,6 @@ func (s *Server) connHandler(c net.Conn) error {
 		default:
 			logrus.Warn("Unknown type")
 			continue
-		}
-
-		if response != "" {
-			_, err = c.Write([]byte(response))
-			if err != nil {
-				return fmt.Errorf("Send response error %v", err)
-			}
-			logrus.WithFields(logrus.Fields{
-				"msg": response,
-			}).Debug("Send response packet")
 		}
 	}
 }

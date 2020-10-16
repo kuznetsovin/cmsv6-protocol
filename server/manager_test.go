@@ -1,4 +1,4 @@
-package device_manager
+package server
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -26,7 +26,8 @@ func TestDeviceRegistry(t *testing.T) {
 					d.AddDevice(deviceID, conn)
 					buf := make([]byte, 128)
 					l, _ := conn.Read(buf)
-					assert.NoError(t, d.SendCommand(deviceID, string(buf[:l])))
+					cmd := DeviceCommand{deviceID, string(buf[:l])}
+					assert.NoError(t, d.SendCommand(cmd))
 				}(c)
 			}
 		}
