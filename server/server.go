@@ -19,7 +19,6 @@ type Server struct {
 
 func (s *Server) Start() error {
 	s.devices = NewDeviceRegistry()
-	s.commandsQueue = make(chan DeviceCommand, 1000000)
 
 	l, err := net.Listen("tcp", s.conn)
 	if err != nil {
@@ -124,5 +123,5 @@ func (s *Server) connHandler(c net.Conn) error {
 }
 
 func New(conn string, db store.Store) *Server {
-	return &Server{conn: conn, db: db}
+	return &Server{conn: conn, db: db, commandsQueue: make(chan DeviceCommand, 1000000)}
 }
