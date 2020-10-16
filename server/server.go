@@ -3,6 +3,7 @@ package server
 import (
 	"cmsv6-protocol/cmsv6"
 	"cmsv6-protocol/store"
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"io"
 	"net"
@@ -26,12 +27,16 @@ func (s *Server) Start() error {
 		if c, err := l.Accept(); err != nil {
 			logrus.Errorf("Connection error %v", err)
 		} else {
-			go s.connHandler(c)
+			go func() {
+				if err := s.connHandler(c); err != nil {
+					logrus.Error(err)
+				}
+			}()
 		}
 	}
 }
 
-func (s *Server) connHandler(c net.Conn) {
+func (s *Server) connHandler(c net.Conn) error {
 	var (
 		response string
 	)
@@ -45,8 +50,7 @@ func (s *Server) connHandler(c net.Conn) {
 		case io.EOF:
 			continue
 		default:
-			logrus.Error("Received error ", err)
-			return
+			return fmt.Errorf("Received error %v", err)
 		}
 
 		rawMsg := string(buf[:readLen])
@@ -58,8 +62,8 @@ func (s *Server) connHandler(c net.Conn) {
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"msg": rawMsg,
-			}).Error("Received error ", err)
-			return
+			}).Warn("Incorrect packet")
+			return fmt.Errorf("Parse packet error %v", err)
 		}
 
 		switch m := msg.(type) {
@@ -70,18 +74,17 @@ func (s *Server) connHandler(c net.Conn) {
 		case *cmsv6.V114:
 			p := store.GeoPoint{DeviceID: m.DeviceID, NavTime: m.Timestamp, Lat: m.Latitude, Lon: m.Longitude}
 			if err := s.db.Save(p); err != nil {
-				logrus.Error("Error save geo data ", err)
+				return fmt.Errorf("Error save geo data %v", err)
 			}
 		default:
-			logrus.Error("Unknown type")
+			logrus.Warn("Unknown type")
 			continue
 		}
 
 		if response != "" {
 			_, err = c.Write([]byte(response))
 			if err != nil {
-				logrus.Error("Send response error ", err)
-				return
+				return fmt.Errorf("Send response error %v", err)
 			}
 			logrus.WithFields(logrus.Fields{
 				"msg": response,
