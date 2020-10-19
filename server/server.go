@@ -10,11 +10,13 @@ import (
 	"time"
 )
 
+type CommandQueue chan DeviceCommand
+
 type Server struct {
 	conn          string
 	db            store.Store
 	devices       *DeviceRegistry
-	commandsQueue chan DeviceCommand
+	commandsQueue CommandQueue
 }
 
 func (s *Server) Start() error {
@@ -115,6 +117,8 @@ func (s *Server) connHandler(c net.Conn) error {
 			if err := s.db.Save(p); err != nil {
 				return fmt.Errorf("Error save geo data %v", err)
 			}
+		case *cmsv6.V100:
+			logrus.Info("Received video response")
 		default:
 			logrus.Warn("Unknown type")
 			continue
@@ -122,6 +126,6 @@ func (s *Server) connHandler(c net.Conn) error {
 	}
 }
 
-func New(conn string, db store.Store) *Server {
-	return &Server{conn: conn, db: db, commandsQueue: make(chan DeviceCommand, 1000000)}
+func New(conn string, db store.Store, cmdQueue CommandQueue) *Server {
+	return &Server{conn: conn, db: db, commandsQueue: cmdQueue}
 }

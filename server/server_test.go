@@ -14,7 +14,8 @@ func TestServer_Start(t *testing.T) {
 
 	srv := ":6608"
 	db := store.NewStore("")
-	s := New(srv, db)
+	queue := make(CommandQueue, 1000000)
+	s := New(srv, db, queue)
 	go func() {
 		assert.NoError(t, s.Start())
 	}()
@@ -46,4 +47,6 @@ func TestServer_Start(t *testing.T) {
 	testReq = []byte("$$dc0165,4,V114,0900000,,200924 112942,A0000,37,57,421385999,55,49,237689999,0.00,0,0F0EE331000D7383,0000000000000000,0.00,0.00,0.00,0,0.00,0,0|0.00|0|0|0|0|0|0|0|0.00|0|0,1#")
 	_, _ = conn.Write(testReq)
 
+	testReq = []byte("$$dc0192,6,V100,0900000,,200924 113137,A0000,37,57,432905999,55,49,240083999,0.00,0,0F0EE331000D7383,0000000000000000,0.00,0.00,0.00,0,0.00,0,0|0.00|0|0|0|0|0|0|0|0.00|0|0,,C508,200924 113137,0,1,1,,0#")
+	_, _ = conn.Write(testReq)
 }

@@ -6,6 +6,6 @@ type DefaultStore struct {
 }
 
 func (s *DefaultStore) Save(p GeoPoint) error {
-	fmt.Printf("%+v", p)
+	fmt.Printf("%+v\n", p)
 	return nil
 }

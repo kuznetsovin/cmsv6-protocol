@@ -12,7 +12,8 @@ func main() {
 
 	logrus.SetLevel(logLevel)
 	db := store.NewStore("")
-	srv := server.New(addr, db)
+	cmdBuf := make(server.CommandQueue, 1000000)
+	srv := server.New(addr, db, cmdBuf)
 
 	logrus.Error(srv.Start())
 }
