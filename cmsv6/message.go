@@ -10,6 +10,10 @@ type Decoder interface {
 	Decode(Message) error
 }
 
+type Encoder interface {
+	Encode() string
+}
+
 type Message []string
 
 func ParsePacket(packet string) (interface{}, error) {
@@ -38,8 +42,8 @@ func ParsePacket(packet string) (interface{}, error) {
 	return result, err
 }
 
-func CreateResponse(reqHeader Header, respTime time.Time, extra []string) string {
-	resp := C100{
+func CreateResponse(reqHeader Header, respTime time.Time, extra []string) Encoder {
+	return &C100{
 		Header: Header{
 			MessageID:    "dc0056",
 			PacketNumber: reqHeader.PacketNumber,
@@ -51,7 +55,6 @@ func CreateResponse(reqHeader Header, respTime time.Time, extra []string) string
 		RequestTimestamp: reqHeader.Timestamp,
 		ExtraFields:      extra,
 	}
-	return resp.Encode()
 }
 
 func parseMsg(msg string) ([]string, error) {

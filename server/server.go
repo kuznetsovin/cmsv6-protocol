@@ -14,6 +14,7 @@ type CommandQueue chan DeviceCommand
 
 type Server struct {
 	conn          string
+	videoSrvIp    string
 	db            store.Store
 	devices       *DeviceRegistry
 	commandsQueue CommandQueue
@@ -49,15 +50,31 @@ func (s *Server) Start() error {
 
 func (s *Server) startCommandSender() {
 	for c := range s.commandsQueue {
-		if err := s.devices.SendCommand(c); err != nil {
+		if c.Command == nil {
+			logrus.Warn("Empty command")
+			continue
+		}
+
+		cmd := ""
+		switch m := c.Command.(type) {
+		case *cmsv6.C100:
+			cmd = m.Encode()
+		case *cmsv6.C508:
+			m.PacketNumber = 6
+			m.SrvIp = s.videoSrvIp
+			cmd = m.Encode()
+		default:
+			continue
+		}
+		if err := s.devices.SendCommand(c.DeviceID, cmd); err != nil {
 			logrus.WithFields(logrus.Fields{
 				"device": c.DeviceID,
-				"msg":    c.Command,
+				"msg":    cmd,
 			}).Errorf("Send packet error %v", err)
 		}
 
 		logrus.WithFields(logrus.Fields{
-			"msg": c.Command,
+			"msg": cmd,
 		}).Debug("Send response packet")
 	}
 }
@@ -127,6 +144,6 @@ func (s *Server) connHandler(c net.Conn) error {
 	}
 }
 
-func New(conn string, db store.Store, cmdQueue CommandQueue) *Server {
-	return &Server{conn: conn, db: db, commandsQueue: cmdQueue}
+func New(conn, videoAddr string, cmdQueue CommandQueue) *Server {
+	return &Server{conn: conn, videoSrvIp: videoAddr, db: store.NewStore(""), commandsQueue: cmdQueue}
 }

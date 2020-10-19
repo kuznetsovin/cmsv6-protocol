@@ -1,6 +1,7 @@
 package server
 
 import (
+	"cmsv6-protocol/cmsv6"
 	"errors"
 	"net"
 	"sync"
@@ -8,7 +9,7 @@ import (
 
 type DeviceCommand struct {
 	DeviceID string
-	Command  string
+	Command  cmsv6.Encoder
 }
 
 type DeviceRegistry struct {
@@ -22,13 +23,13 @@ func (r *DeviceRegistry) AddDevice(deviceId string, c net.Conn) {
 	r.m.RUnlock()
 }
 
-func (r *DeviceRegistry) SendCommand(dc DeviceCommand) error {
-	devConn, ok := r.registry[dc.DeviceID]
+func (r *DeviceRegistry) SendCommand(deviceID, cmd string) error {
+	devConn, ok := r.registry[deviceID]
 	if !ok {
 		return errors.New("Device not found in registry")
 	}
 
-	_, err := devConn.Write([]byte(dc.Command))
+	_, err := devConn.Write([]byte(cmd))
 
 	return err
 }

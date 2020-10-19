@@ -55,7 +55,7 @@ func TestCreateResponse(t *testing.T) {
 		v, ok := r.(*V101)
 		if assert.Equal(t, ok, true) {
 			r := CreateResponse(v.Header, dt, []string{"0", "1", "1"})
-			assert.Equal(t, r, "$$dc0056,1,C100,0900000,,200924 112941,V101,200924 112940,0,1,1,#")
+			assert.Equal(t, r.Encode(), "$$dc0056,1,C100,0900000,,200924 112941,V101,200924 112940,0,1,1,#")
 		}
 	}
 }

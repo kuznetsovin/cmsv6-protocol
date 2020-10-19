@@ -29,7 +29,12 @@ func TestC508_Decode(t *testing.T) {
 
 func TestCreateVideoRequest(t *testing.T) {
 	dt := time.Date(2020, time.September, 24, 11, 31, 37, 0, time.UTC)
-	assert.Equal(t, CreateVideoRequest(6, dt, "0900000", "192.168.32.117"),
+	r := CreateVideoRequest(dt, "0900000")
+
+	c := r.(*C508)
+	c.PacketNumber = 6
+	c.SrvIp = "192.168.32.117"
+	assert.Equal(t, c.Encode(),
 		"$$dc0067,6,C508,0900000,,200924 113137,44108896,1,0,1,0,192.168.32.117,6602#")
 }
 

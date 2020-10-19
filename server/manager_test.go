@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
+	"time"
 )
 
 func TestDeviceRegistry(t *testing.T) {
@@ -26,12 +27,12 @@ func TestDeviceRegistry(t *testing.T) {
 					d.AddDevice(deviceID, conn)
 					buf := make([]byte, 128)
 					l, _ := conn.Read(buf)
-					cmd := DeviceCommand{deviceID, string(buf[:l])}
-					assert.NoError(t, d.SendCommand(cmd))
+					assert.NoError(t, d.SendCommand(deviceID, string(buf[:l])))
 				}(c)
 			}
 		}
 	}()
+	time.Sleep(1 * time.Second)
 
 	conn, err := net.Dial("tcp", testAddr)
 	if !assert.NoError(t, err) {

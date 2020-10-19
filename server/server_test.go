@@ -1,7 +1,6 @@
 package server
 
 import (
-	"cmsv6-protocol/store"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"net"
@@ -13,9 +12,8 @@ func TestServer_Start(t *testing.T) {
 	logrus.SetLevel(logrus.DebugLevel)
 
 	srv := ":6608"
-	db := store.NewStore("")
 	queue := make(CommandQueue, 1000000)
-	s := New(srv, db, queue)
+	s := New(srv, "", queue)
 	go func() {
 		assert.NoError(t, s.Start())
 	}()

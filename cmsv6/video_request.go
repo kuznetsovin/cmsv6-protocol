@@ -23,24 +23,21 @@ func (c *C508) Encode() string {
 		c.AvType, c.Channel, c.SrvIp, c.SrvPort)
 }
 
-func CreateVideoRequest(pkgNum int, date time.Time, deviceID, ip string) string {
-	c := C508{
+func CreateVideoRequest(date time.Time, deviceID string) Encoder {
+	return &C508{
 		Header: Header{
-			MessageID:    "dc0067",
-			PacketNumber: pkgNum,
-			Type:         "C508",
-			DeviceID:     deviceID,
-			Timestamp:    date,
+			MessageID: "dc0067",
+			Type:      "C508",
+			DeviceID:  deviceID,
+			Timestamp: date,
 		},
 		UnknownUID: 44108896,
 		MediaType:  1,
 		Type:       0,
 		AvType:     1,
 		Channel:    0,
-		SrvIp:      ip,
 		SrvPort:    6602,
 	}
-	return c.Encode()
 }
 
 type V100 struct {
