@@ -147,3 +147,12 @@ func (s *Server) connHandler(c net.Conn) error {
 func New(conn, videoAddr string, cmdQueue CommandQueue) *Server {
 	return &Server{conn: conn, videoSrvIp: videoAddr, db: store.NewStore(""), commandsQueue: cmdQueue}
 }
+
+func CreateVideoRequestCommand(deviceID string) DeviceCommand {
+	ts := time.Now().UTC()
+
+	return DeviceCommand{
+		DeviceID: deviceID,
+		Command:  cmsv6.CreateVideoRequest(ts, deviceID),
+	}
+}
