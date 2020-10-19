@@ -75,7 +75,7 @@ func (s *Server) startCommandSender() {
 
 		logrus.WithFields(logrus.Fields{
 			"msg": cmd,
-		}).Debug("Send response packet")
+		}).Debug("Send packet")
 	}
 }
 
