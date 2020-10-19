@@ -119,6 +119,7 @@ func (s *Server) connHandler(c net.Conn) error {
 			}
 		case *cmsv6.V100:
 			logrus.Info("Received video response")
+			// TODO: start video service
 		default:
 			logrus.Warn("Unknown type")
 			continue
